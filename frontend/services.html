@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon Services Menu &amp; Treatments | Pehchan Unisex Salon</title>
+  <meta name="description" content="Explore our complete menu of salon treatments: Creative Haircuts, Keratin Smooth Therapy, O3+ Diamond Facials, Balayage, Bridal Makeup, and Beard Sculpting.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-contact">
+        <a href="tel:+919876543210"><i class="fas fa-phone-alt text-gold"></i> +91 98765 43210</a>
+        <a href="mailto:hello@pehchansalon.com"><i class="fas fa-envelope text-gold"></i> hello@pehchansalon.com</a>
+      </div>
+      <div class="top-bar-hours"><i class="far fa-clock text-gold"></i> Mon - Sun: 09:00 AM - 09:00 PM</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="container navbar">
+      <a href="/" class="logo-brand">
+        <div class="logo-icon">P</div>
+        <div class="logo-text">
+          <h2>PEHCHAN</h2>
+          <span>Unisex Salon &amp; Spa</span>
+        </div>
+      </a>
+      <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/about.html" class="nav-link">About Us</a>
+        <a href="/services.html" class="nav-link active">Services</a>
+        <a href="/bridal.html" class="nav-link">Bridal Lounge</a>
+        <a href="/pricing.html" class="nav-link">Pricing</a>
+        <a href="/gallery.html" class="nav-link">Portfolio</a>
+        <a href="/offers.html" class="nav-link">Offers</a>
+        <a href="/testimonials.html" class="nav-link">Reviews</a>
+        <a href="/contact.html" class="nav-link">Contact</a>
+        <a href="/booking.html" class="btn btn-gold btn-sm nav-cta"><i class="far fa-calendar-check"></i> Book Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Banner -->
+  <section style="background: linear-gradient(rgba(18,18,18,0.85), rgba(18,18,18,0.92)), url('https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1600&q=80') center/cover; padding: 75px 0; text-align: center; border-bottom: 1px solid var(--gold-border);">
+    <div class="container">
+      <span class="section-subtitle">Luxury Care &amp; Craft</span>
+      <h1 style="color: #fff; font-size: 3.2rem; margin-bottom: 15px;">Our Services &amp; Rituals</h1>
+      <p style="color: #ddd; max-width: 650px; margin: 0 auto;">Immerse yourself in precision cuts, restorative hair botox, rejuvenating facials, and personalized grooming.</p>
+    </div>
+  </section>
+
+  <!-- Services Filter & Grid -->
+  <section class="section">
+    <div class="container">
+      
+      <!-- Category Tabs Nav -->
+      <div class="tabs-nav" id="categoryTabsNav">
+        <button class="tab-btn active" data-category="">All Services</button>
+        <!-- Populated from API -->
+      </div>
+
+      <!-- Gender Filter Buttons -->
+      <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 40px;">
+        <button class="btn btn-dark btn-sm gender-btn active" data-gender="">All Clients</button>
+        <button class="btn btn-dark btn-sm gender-btn" data-gender="female"><i class="fas fa-female"></i> Women</button>
+        <button class="btn btn-dark btn-sm gender-btn" data-gender="male"><i class="fas fa-male"></i> Men</button>
+      </div>
+
+      <!-- Services Grid -->
+      <div class="services-grid" id="servicesGridContainer">
+        <!-- Loaded dynamically -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container text-center" style="font-size: 0.88rem; color: #777;">
+      &copy; 2026 Pehchan Unisex Salon &amp; Beauty Parlour. All Rights Reserved. &bull; <a href="/booking.html" class="text-gold">Book Appointment</a> &bull; <a href="/admin/" style="color:#666;">Admin Login</a>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+  <script>
+    let activeCategorySlug = "";
+    let activeGender = "";
+    let allServices = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Load Categories
+      const categories = await PehchanAPI.getCategories();
+      const tabsNav = document.getElementById("categoryTabsNav");
+
+      categories.forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = "tab-btn";
+        btn.dataset.category = c.slug;
+        btn.textContent = c.name;
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeCategorySlug = c.slug;
+          renderFiltered();
+        });
+        tabsNav.appendChild(btn);
+      });
+
+      // "All Services" button listener
+      tabsNav.querySelector("button[data-category='']").addEventListener("click", (e) => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        e.target.classList.add("active");
+        activeCategorySlug = "";
+        renderFiltered();
+      });
+
+      // Gender filter buttons
+      document.querySelectorAll(".gender-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeGender = btn.dataset.gender;
+          renderFiltered();
+        });
+      });
+
+      // Fetch all services
+      allServices = await PehchanAPI.getServices();
+      renderFiltered();
+    });
+
+    function renderFiltered() {
+      const container = document.getElementById("servicesGridContainer");
+      const filtered = allServices.filter(s => {
+        const matchCat = !activeCategorySlug || (s.category_slug === activeCategorySlug || (s.category_name && s.category_name.toLowerCase().includes(activeCategorySlug.replace("-", " "))));
+        const matchGen = !activeGender || (s.gender_target === activeGender || s.gender_target === "unisex");
+        return matchCat && matchGen;
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #888;">No services found for the selected filters.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => `
+        <div class="service-card">
+          <div class="service-img-wrap">
+            <img src="${s.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80'}" alt="${s.name}" loading="lazy">
+            <span class="service-badge">${s.gender_target.toUpperCase()}</span>
+          </div>
+          <div class="service-body">
+            <div class="service-category">${s.category_name || 'Hair & Wellness'}</div>
+            <h3>${s.name}</h3>
+            <p>${s.description || 'Personalized treatment with luxury salon products.'}</p>
+            <div class="service-meta">
+              <div class="service-duration"><i class="far fa-clock text-gold"></i> ${s.duration_minutes} Mins</div>
+              <div class="service-price">
+                ₹${s.discount_price || s.price}
+                ${s.discount_price ? `<span class="old-price">₹${s.price}</span>` : ''}
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <a href="/service-details.html?id=${s.id}" class="btn btn-outline-gold btn-sm" style="flex: 1;"><i class="fas fa-info-circle"></i> Details</a>
+              <a href="/booking.html?service_id=${s.id}" class="btn btn-gold btn-sm" style="flex: 1;"><i class="far fa-calendar-check"></i> Book</a>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+  </script>
+</body>
+</html>

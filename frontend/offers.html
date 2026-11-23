@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers &amp; Packages | Pehchan Unisex Salon &amp; Beauty Parlour</title>
+  <meta name="description" content="View our seasonal promotional offers, couple spa packages, festive skin glow combos, and grooming deals.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-contact">
+        <a href="tel:+919876543210"><i class="fas fa-phone-alt text-gold"></i> +91 98765 43210</a>
+        <a href="mailto:hello@pehchansalon.com"><i class="fas fa-envelope text-gold"></i> hello@pehchansalon.com</a>
+      </div>
+      <div class="top-bar-hours"><i class="fas fa-tag text-gold"></i> Limited Time Seasonal Deals &bull; Instant Online Booking</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="container navbar">
+      <a href="/" class="logo-brand">
+        <div class="logo-icon">P</div>
+        <div class="logo-text">
+          <h2>PEHCHAN</h2>
+          <span>Unisex Salon &amp; Spa</span>
+        </div>
+      </a>
+      <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/about.html" class="nav-link">About Us</a>
+        <a href="/services.html" class="nav-link">Services</a>
+        <a href="/bridal.html" class="nav-link">Bridal Lounge</a>
+        <a href="/pricing.html" class="nav-link">Pricing</a>
+        <a href="/gallery.html" class="nav-link">Portfolio</a>
+        <a href="/offers.html" class="nav-link active">Offers</a>
+        <a href="/testimonials.html" class="nav-link">Reviews</a>
+        <a href="/contact.html" class="nav-link">Contact</a>
+        <a href="/booking.html" class="btn btn-gold btn-sm nav-cta"><i class="far fa-calendar-check"></i> Book Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Banner -->
+  <section style="background: linear-gradient(rgba(18,18,18,0.85), rgba(18,18,18,0.92)), url('https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80') center/cover; padding: 75px 0; text-align: center; border-bottom: 1px solid var(--gold-border);">
+    <div class="container">
+      <span class="section-subtitle">Exclusive Value</span>
+      <h1 style="color: #fff; font-size: 3.2rem; margin-bottom: 15px;">Offers &amp; Packages</h1>
+      <p style="color: #ddd; max-width: 650px; margin: 0 auto;">Pamper yourself or a loved one with curated luxury service combinations at special festive pricing.</p>
+    </div>
+  </section>
+
+  <!-- Offers Grid -->
+  <section class="section">
+    <div class="container">
+      <div class="offers-grid" id="allOffersContainer">
+        <!-- Loaded dynamically from API -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container text-center" style="font-size: 0.88rem; color: #777;">
+      &copy; 2026 Pehchan Unisex Salon &amp; Beauty Parlour. All Rights Reserved. &bull; <a href="/booking.html" class="text-gold">Book Appointment</a>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const offers = await PehchanAPI.getOffers();
+      const container = document.getElementById("allOffersContainer");
+
+      if (!offers.length) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #888;">No active seasonal offers right now. Check back soon!</div>`;
+        return;
+      }
+
+      container.innerHTML = offers.map(o => `
+        <div class="offer-card">
+          <div class="offer-header">
+            <img src="${o.image_url || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80'}" alt="${o.title}" loading="lazy">
+            ${o.discount_percentage ? `<div class="offer-discount-badge">${o.discount_percentage}%<span>OFF</span></div>` : ''}
+          </div>
+          <div class="offer-body">
+            <span class="section-subtitle">${o.badge_text || 'SEASONAL SPECIAL'}</span>
+            <h3>${o.title}</h3>
+            <p>${o.description}</p>
+            ${o.included_services ? `<div class="offer-includes"><strong>Treatments Included:</strong> ${o.included_services}</div>` : ''}
+            <div style="font-size: 0.82rem; color: #aaa; margin-bottom: 15px;">
+              <i class="far fa-calendar-alt text-gold"></i> Valid Until: ${o.valid_until}
+            </div>
+            <div class="offer-price-row">
+              <span class="price">₹${o.discounted_price}</span>
+              ${o.original_price ? `<span class="original">₹${o.original_price}</span>` : ''}
+            </div>
+            <a href="/booking.html?offer=${o.id}" class="btn btn-gold btn-sm"><i class="fas fa-check"></i> Book This Package</a>
+          </div>
+        </div>
+      `).join("");
+    });
+  </script>
+</body>
+</html>

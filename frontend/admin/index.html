@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon Owner Admin Portal | Pehchan Unisex Salon</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/admin-static/css/admin.css">
+</head>
+<body>
+
+  <!-- Login Modal Overlay (Displayed if unauthenticated) -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <div class="login-logo">P</div>
+      <h2 style="font-family: var(--font-serif); color: #fff; margin-bottom: 6px;">PEHCHAN SALON</h2>
+      <p style="color: var(--gold-primary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px;">Executive Control Panel</p>
+
+      <form id="adminLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label">Admin Email</label>
+          <input type="email" id="loginEmail" class="form-input" required value="admin@pehchansalon.com">
+        </div>
+
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label">Password</label>
+          <input type="password" id="loginPassword" class="form-input" required value="AdminPehchan@2026">
+        </div>
+
+        <button type="submit" id="loginBtn" class="btn-gold" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;">
+          <i class="fas fa-lock-open"></i> Authenticate &amp; Enter
+        </button>
+      </form>
+
+      <div style="margin-top: 20px; font-size: 0.75rem; color: #666; border-top: 1px solid #222; padding-top: 15px;">
+        Default Owner Login: <strong>admin@pehchansalon.com</strong> &bull; <strong>AdminPehchan@2026</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Application Wrapper -->
+  <div class="admin-wrapper" id="adminAppWrapper" style="display: none;">
+    
+    <!-- Mobile Sidebar Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <div class="brand-brand-wrap">
+          <div class="brand-icon">P</div>
+          <div class="brand-title">
+            <h3>PEHCHAN</h3>
+            <span>Admin Lounge</span>
+          </div>
+        </div>
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">&times;</button>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="menu-item"><a class="menu-link active" data-tab="overview"><i class="fas fa-chart-line"></i> Overview &amp; Stats</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="appointments"><i class="far fa-calendar-check"></i> Appointments</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="customers"><i class="fas fa-users"></i> Customer CRM</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="services"><i class="fas fa-cut"></i> Service Menu</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="staff"><i class="fas fa-user-tie"></i> Stylists &amp; Roster</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="offers"><i class="fas fa-tags"></i> Offers &amp; Combos</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="gallery"><i class="far fa-images"></i> Portfolio Gallery</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="reviews"><i class="far fa-star"></i> Reviews Moderation</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="settings"><i class="fas fa-cog"></i> Salon Settings</a></li>
+        <li class="menu-item"><a class="menu-link" data-tab="logs"><i class="fas fa-paper-plane"></i> Notification Logs</a></li>
+      </ul>
+
+      <div class="sidebar-user">
+        <div class="user-info">
+          <h5 id="loggedAdminName">Salon Owner</h5>
+          <span id="loggedAdminRole">Owner</span>
+        </div>
+        <button class="btn-logout" id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      
+      <!-- Top Header -->
+      <div class="top-header">
+        <div class="header-left-wrap">
+          <button class="mobile-sidebar-toggle" id="adminSidebarToggle" aria-label="Toggle Navigation Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-heading">
+            <h1 id="currentTabTitle">Overview &amp; Statistics</h1>
+            <p id="currentTabDesc">Real-time salon operations, active bookings and revenue health.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <a href="/" target="_blank" class="btn-action" style="padding: 9px 16px;"><i class="fas fa-external-link-alt"></i> Open Public Website</a>
+          <button id="refreshDataBtn" class="btn-gold" style="padding: 9px 16px;"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+        </div>
+      </div>
+
+      <!-- 1. OVERVIEW & STATS PANEL -->
+      <div class="tab-panel active" id="panel-overview">
+        <!-- KPI Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info">
+              <span>Today's Bookings</span>
+              <h2 id="kpiTodayAppointments">0</h2>
+            </div>
+            <div class="stat-icon"><i class="far fa-calendar"></i></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span>Pending Confirm</span>
+              <h2 id="kpiPendingAppointments" style="color: #f39c12;">0</h2>
+            </div>
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span>Today's Revenue</span>
+              <h2 id="kpiTodayRevenue" style="color: var(--gold-primary);">₹0</h2>
+            </div>
+            <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span>Total Customers</span>
+              <h2 id="kpiTotalCustomers">0</h2>
+            </div>
+            <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+          </div>
+        </div>
+
+        <!-- Recent Appointments Table -->
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Recent Appointments</h3>
+            <button class="btn-action" onclick="switchTab('appointments')">View All Bookings <i class="fas fa-arrow-right"></i></button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Ref #</th>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Date &amp; Time</th>
+                  <th>Stylist</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="overviewRecentTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. APPOINTMENTS MANAGEMENT PANEL -->
+      <div class="tab-panel" id="panel-appointments">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>All Appointments</h3>
+            <div class="table-controls">
+              <input type="text" id="appSearchInput" class="admin-search" placeholder="Search ref, name or phone...">
+              <select id="appStatusFilter" class="admin-select">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="rescheduled">Rescheduled</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Ref Code</th>
+                  <th>Customer Info</th>
+                  <th>Treatment</th>
+                  <th>Date &amp; Slot</th>
+                  <th>Stylist</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Manage Status</th>
+                </tr>
+              </thead>
+              <tbody id="allAppointmentsTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. CUSTOMER CRM PANEL -->
+      <div class="tab-panel" id="panel-customers">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Customer Directory</h3>
+            <div class="table-controls">
+              <input type="text" id="custSearchInput" class="admin-search" placeholder="Search customer...">
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Phone Number</th>
+                  <th>Email</th>
+                  <th>Total Visits</th>
+                  <th>Registered</th>
+                  <th>Quick Message</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. SERVICES MANAGEMENT PANEL -->
+      <div class="tab-panel" id="panel-services">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Services &amp; Pricing Management</h3>
+            <button class="btn-gold" id="openAddServiceModalBtn"><i class="fas fa-plus"></i> Add New Service</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Treatment</th>
+                  <th>Category</th>
+                  <th>Duration</th>
+                  <th>Target</th>
+                  <th>Price</th>
+                  <th>Discount Price</th>
+                  <th>Featured</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminServicesTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. STAFF MANAGEMENT PANEL -->
+      <div class="tab-panel" id="panel-staff">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Stylists &amp; Specialists Roster</h3>
+            <button class="btn-gold" id="openAddStaffModalBtn"><i class="fas fa-user-plus"></i> Add New Specialist</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Stylist Name</th>
+                  <th>Designation</th>
+                  <th>Specialization</th>
+                  <th>Rating</th>
+                  <th>Experience</th>
+                  <th>Contact</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminStaffTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. OFFERS & PACKAGES PANEL -->
+      <div class="tab-panel" id="panel-offers">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Offers &amp; Festive Packages</h3>
+            <button class="btn-gold" id="openAddOfferModalBtn"><i class="fas fa-plus"></i> Create Package Offer</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Package Title</th>
+                  <th>Badge</th>
+                  <th>Original Price</th>
+                  <th>Offer Price</th>
+                  <th>Discount %</th>
+                  <th>Validity</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminOffersTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. GALLERY MANAGEMENT PANEL -->
+      <div class="tab-panel" id="panel-gallery">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Salon Portfolio &amp; Photographs</h3>
+            <button class="btn-gold" id="openAddGalleryModalBtn"><i class="fas fa-upload"></i> Upload Image</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Preview</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Bridal Special</th>
+                  <th>Caption</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminGalleryTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. REVIEWS MODERATION PANEL -->
+      <div class="tab-panel" id="panel-reviews">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Customer Reviews Moderation</h3>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Reviewer</th>
+                  <th>Location</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Status</th>
+                  <th>Homepage Feature</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminReviewsTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. BUSINESS SETTINGS PANEL -->
+      <div class="tab-panel" id="panel-settings">
+        <div class="table-card" style="padding: 30px; max-width: 800px;">
+          <h3 style="margin-bottom: 20px; color: var(--gold-light); font-family: var(--font-serif); font-size: 1.6rem;">Salon Profile &amp; Automation Rules</h3>
+          
+          <form id="salonSettingsForm">
+            <div class="form-group">
+              <label class="form-label">Salon Legal / Display Name</label>
+              <input type="text" id="setSalonName" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Brand Tagline</label>
+              <input type="text" id="setTagline" class="form-input">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group">
+                <label class="form-label">Reception Hotline</label>
+                <input type="text" id="setPhone" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp Business Number</label>
+                <input type="text" id="setWhatsApp" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contact / Notifications Email</label>
+              <input type="email" id="setEmail" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Physical Address</label>
+              <textarea id="setAddress" class="form-textarea" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Booking Slot Step Interval (Minutes)</label>
+              <select id="setSlotInterval" class="form-select">
+                <option value="15">15 Minutes</option>
+                <option value="30">30 Minutes (Recommended)</option>
+                <option value="45">45 Minutes</option>
+                <option value="60">60 Minutes</option>
+              </select>
+            </div>
+
+            <div style="background: #111; padding: 20px; border-radius: var(--radius-sm); margin: 25px 0; border: 1px solid #333;">
+              <h4 style="color: #fff; margin-bottom: 15px; font-size: 1rem;"><i class="fas fa-sliders-h text-gold"></i> Automation Switches</h4>
+              
+              <div style="display: flex; gap: 25px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setOnlineBooking" style="width: 18px; height: 18px;">
+                  <span>Allow Online Bookings</span>
+                </label>
+                
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setWhatsAppNotif" style="width: 18px; height: 18px;">
+                  <span>WhatsApp Notifications</span>
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="setEmailNotif" style="width: 18px; height: 18px;">
+                  <span>Email Notifications</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-gold"><i class="fas fa-save"></i> Save Salon Settings</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 10. NOTIFICATION LOGS PANEL -->
+      <div class="tab-panel" id="panel-logs">
+        <div class="table-card">
+          <div class="table-header-bar">
+            <h3>Notification Delivery Audit Trail</h3>
+            <p style="color: #888; font-size: 0.85rem; margin: 0;">Automated records of WhatsApp Business API &amp; Email dispatches.</p>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Channel</th>
+                  <th>Recipient</th>
+                  <th>Subject</th>
+                  <th>Message Preview</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminLogsTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Add/Edit Service Modal -->
+  <div class="admin-modal-overlay" id="serviceModalOverlay">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h3 id="serviceModalTitle">Add Salon Service</h3>
+        <button class="modal-close" onclick="closeModal('serviceModalOverlay')">&times;</button>
+      </div>
+      <form id="serviceModalForm">
+        <div class="modal-body">
+          <input type="hidden" id="modalServiceId">
+          <div class="form-group">
+            <label class="form-label">Service Name *</label>
+            <input type="text" id="servName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="servCategorySelect" class="form-select"></select>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label class="form-label">Duration (Minutes) *</label>
+              <input type="number" id="servDuration" class="form-input" required min="10" max="480">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Audience</label>
+              <select id="servGender" class="form-select">
+                <option value="unisex">Unisex</option>
+                <option value="female">Women</option>
+                <option value="male">Men</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label class="form-label">Regular Price (₹) *</label>
+              <input type="number" id="servPrice" class="form-input" required min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Discounted Price (₹)</label>
+              <input type="number" id="servDiscountPrice" class="form-input" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Image URL</label>
+            <input type="url" id="servImage" class="form-input" placeholder="https://images.unsplash.com/...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="servDesc" class="form-textarea" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-action" onclick="closeModal('serviceModalOverlay')">Cancel</button>
+          <button type="submit" class="btn-gold">Save Service</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Staff Modal -->
+  <div class="admin-modal-overlay" id="staffModalOverlay">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h3 id="staffModalTitle">Add Stylist / Specialist</h3>
+        <button class="modal-close" onclick="closeModal('staffModalOverlay')">&times;</button>
+      </div>
+      <form id="staffModalForm">
+        <div class="modal-body">
+          <input type="hidden" id="modalStaffId">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="staffName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Designation *</label>
+            <input type="text" id="staffDesignation" class="form-input" required placeholder="e.g. Creative Hair Director">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Specialization</label>
+            <input type="text" id="staffSpecialization" class="form-input" placeholder="e.g. Keratin &amp; Balayage">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label class="form-label">Experience (Years)</label>
+              <input type="number" id="staffExp" class="form-input" min="0" value="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rating (1-5)</label>
+              <input type="number" step="0.1" id="staffRating" class="form-input" min="1" max="5" value="5.0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Photo URL</label>
+            <input type="url" id="staffPhoto" class="form-input" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio / Profile</label>
+            <textarea id="staffBio" class="form-textarea" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-action" onclick="closeModal('staffModalOverlay')">Cancel</button>
+          <button type="submit" class="btn-gold">Save Stylist</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Offer Modal -->
+  <div class="admin-modal-overlay" id="offerModalOverlay">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h3>Create Package Offer</h3>
+        <button class="modal-close" onclick="closeModal('offerModalOverlay')">&times;</button>
+      </div>
+      <form id="offerModalForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Package Title *</label>
+            <input type="text" id="offerTitle" class="form-input" required placeholder="e.g. Festive Glow Royale">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Badge Text</label>
+            <input type="text" id="offerBadge" class="form-input" placeholder="e.g. 30% OFF / POPULAR">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label class="form-label">Original Price (₹)</label>
+              <input type="number" id="offerOrigPrice" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Offer Price (₹) *</label>
+              <input type="number" id="offerDiscPrice" class="form-input" required>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label class="form-label">Valid From *</label>
+              <input type="date" id="offerValidFrom" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valid Until *</label>
+              <input type="date" id="offerValidUntil" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Included Services (Comma separated)</label>
+            <input type="text" id="offerIncludes" class="form-input" placeholder="e.g. Haircut, O3+ Facial, Beard Sculpting">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Banner Image URL</label>
+            <input type="url" id="offerImg" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="offerDesc" class="form-textarea" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-action" onclick="closeModal('offerModalOverlay')">Cancel</button>
+          <button type="submit" class="btn-gold">Create Offer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Gallery Modal -->
+  <div class="admin-modal-overlay" id="galleryModalOverlay">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h3>Add Portfolio Photograph</h3>
+        <button class="modal-close" onclick="closeModal('galleryModalOverlay')">&times;</button>
+      </div>
+      <form id="galleryModalForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Title *</label>
+            <input type="text" id="galTitle" class="form-input" required placeholder="e.g. Balayage Beach Waves">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="galCategory" class="form-select">
+              <option value="hair">Hair Styling</option>
+              <option value="bridal">Bridal Special</option>
+              <option value="skincare">Skin Care &amp; Facials</option>
+              <option value="beard">Men's Beard &amp; Grooming</option>
+              <option value="nails">Nail Art &amp; Extensions</option>
+              <option value="salon_interior">Salon Ambience</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Image URL *</label>
+            <input type="url" id="galImgUrl" class="form-input" required placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Caption / Description</label>
+            <input type="text" id="galCaption" class="form-input">
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="galIsBridal" style="width: 18px; height: 18px;">
+              <span>Highlight in Bridal Portfolio Lounge</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-action" onclick="closeModal('galleryModalOverlay')">Cancel</button>
+          <button type="submit" class="btn-gold">Add Image</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reschedule Modal -->
+  <div class="admin-modal-overlay" id="rescheduleModalOverlay">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h3>Reschedule Appointment</h3>
+        <button class="modal-close" onclick="closeModal('rescheduleModalOverlay')">&times;</button>
+      </div>
+      <form id="rescheduleModalForm">
+        <div class="modal-body">
+          <input type="hidden" id="reschedAppId">
+          <p id="reschedDetailsNotice" style="color: #aaa; margin-bottom: 15px; font-size: 0.9rem;"></p>
+          <div class="form-group">
+            <label class="form-label">New Appointment Date *</label>
+            <input type="date" id="reschedDate" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Start Time (HH:MM 24-hr) *</label>
+            <input type="time" id="reschedTime" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign Stylist</label>
+            <select id="reschedStaffSelect" class="form-select"></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-action" onclick="closeModal('rescheduleModalOverlay')">Cancel</button>
+          <button type="submit" class="btn-gold">Confirm Reschedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/admin-static/js/admin.js"></script>
+</body>
+</html>
