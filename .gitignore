@@ -1,7 +1,12 @@
 node_modules/
+__pycache__/
+*.py[cod]
 dist/
 build/
 .env
 .env.*
 !.env.example
+*.db
+*.sqlite
+*.sqlite3
 *.log
